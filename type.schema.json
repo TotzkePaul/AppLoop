@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "applicationType": {
+      "type": "string",
+      "enum": ["Backend", "Frontend", "Fullstack"]
+    },
+    "programmingLanguages": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "defaultFeatures": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "architectureDesign": {
+      "type": "object",
+      "properties": {
+        "pattern": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["pattern"]
+    },
+    "structure": {
+      "type": "object",
+      "patternProperties": {
+        "^.+$": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "fileTemplates": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "updateContent": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "required": ["applicationType", "programmingLanguages", "structure"]
+}

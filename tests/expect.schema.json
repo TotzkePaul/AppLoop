@@ -1,0 +1,26 @@
+{
+    "applicationType": "Frontend",
+    "programmingLanguages": ["TypeScript", "HTML", "CSS"],
+    "defaultFeatures": ["Routing", "HTTP Client", "Forms"],
+    "architectureDesign": {
+      "pattern": "MVVM",
+      "description": "Model-View-ViewModel pattern suited for dynamic web apps"
+    },
+    "structure": {
+      "src": ["app.module.ts", "app.component.ts", "app.component.html", "app.component.css"],
+      "assets": [],
+      "environments": ["environment.ts", "environment.prod.ts"]
+    },
+    "fileTemplates": {
+      "app.module.ts": "// Root module of the Angular app",
+      "app.component.ts": "// Root component of the Angular app",
+      "app.component.html": "<!-- HTML template for the root component -->",
+      "app.component.css": "/* CSS for the root component */",
+      "environment.ts": "// Development environment settings",
+      "environment.prod.ts": "// Production environment settings"
+    },
+    "updateContent": {
+      "app.component.ts": "// Updated content for the root component"
+    }
+  }
+  

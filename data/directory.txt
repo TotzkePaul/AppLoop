@@ -1,0 +1,34 @@
+SplashPage
+  -.DS_Store
+  -LICENSE
+  -README.md
+  -package-lock.json
+SplashPage/app
+  -.DS_Store
+  -tsconfig.app.json
+  -.editorconfig
+  -README.md
+  -angular.json
+  -.gitignore
+  -package-lock.json
+  -package.json
+  -tsconfig.json
+  -tsconfig.spec.json
+SplashPage/app/.vscode
+  -extensions.json
+  -launch.json
+  -tasks.json
+SplashPage/app/src
+  -favicon.ico
+  -index.html
+  -main.ts
+  -styles.scss
+SplashPage/app/src/app
+  -app.component.html
+  -app.component.scss
+  -app.routes.ts
+  -app.component.spec.ts
+  -app.component.ts
+  -app.config.ts
+SplashPage/app/src/assets
+  -.gitkeep
