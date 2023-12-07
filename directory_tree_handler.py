@@ -2,11 +2,42 @@ import os
 from ignore_scheme import IgnoreScheme
 
 class DirectoryTreeHandler:
-    def __init__(self, directory_path, ignore_scheme=None):
-        self.directory_path = directory_path
+    def __init__(self, directory_path = None, tree_str = None, ignore_scheme=None):
         self.ignore_scheme = ignore_scheme if ignore_scheme is not None else IgnoreScheme(ignored_files = [".DS_Store", "package-lock.json", ""])
+        
+        if directory_path:
+            self.directory_path = directory_path
+            self.tree_dict = self.get_tree_dict()
+        else:
+            self.directory_path = '.'
+            self.tree_dict = self.string_to_tree_dict(tree_str)
 
+    def string_to_tree_dict(self, tree_string):
+        lines = tree_string.split('\n')
+        tree_dict = {}
+        current_path = []
 
+        for line in lines:
+            stripped_line = line.strip()
+            if line == '':
+                continue
+            if stripped_line.startswith("-"):  # It's a file
+                file_name = stripped_line[1:].strip()
+                dir_path = '/'.join(current_path)
+                if dir_path not in tree_dict:
+                    tree_dict[dir_path] = {'files': []}
+                tree_dict[dir_path]['files'].append(file_name)
+            else:  # It's a directory
+                depth = (len(line) - len(stripped_line)) // 2
+                dir_name = stripped_line
+                current_path = current_path[:depth]
+                current_path.append(dir_name)
+                dir_path = '/'.join(current_path)
+                if dir_path not in tree_dict:
+                    tree_dict[dir_path] = {'files': []}
+
+        return tree_dict
+    
     def get_tree_dict(self, path=None):
         if path is None:
             path = self.directory_path
@@ -15,49 +46,66 @@ class DirectoryTreeHandler:
             if self.ignore_scheme.should_ignore_dir(root):
                 continue
             filtered_files = [f for f in files if not self.ignore_scheme.should_ignore_file(f)]
-            filtered_dirs = [d for d in dirs if not self.ignore_scheme.should_ignore_dir(os.path.join(root, d))]
-            tree[root] = {'files': filtered_files, 'dirs': filtered_dirs}
+            # filtered_dirs = [d for d in dirs if not self.ignore_scheme.should_ignore_dir(os.path.join(root, d))]
+            idx = root.replace(path, ".", 1)
+            tree[idx] = {'files': filtered_files}
         return tree
 
+
     def get_tree_string(self):
-        tree_dict = self.get_tree_dict()
+        tree_dict = self.tree_dict
         tree_str = ""
 
-        def build_tree_string(path, level=0):
-            nonlocal tree_str
-            indent = ' ' * 2 * level
-            tree_str += '{}{}/\n'.format(indent, os.path.basename(path))
-            subindent = ' ' * 2 * (level + 1)
+        for path in sorted(tree_dict.keys()):
+            depth = path.count('/')
+            indent = ''
+            dir_name = path
+            if depth == 0:  # Root directory
+                tree_str += f"{dir_name}\n"
+            else:
+                tree_str += f"{indent}{dir_name}\n"
 
+            for file in sorted(tree_dict[path]['files']):
+                tree_str += f"{indent}- {file}\n"
+
+        return tree_str.strip()
+
+
+    def compare_trees(self, target):
+        target_tree = target.tree_dict
+        original_tree = self.tree_dict
+        missing_files_tree = {}
+
+        for path, content in original_tree.items():
+            if path not in target_tree:
+                missing_files_tree[path] = content
+            else:
+                missing_files = [file for file in content['files'] if file not in target_tree[path]['files']]
+                if missing_files:
+                    missing_files_tree[path] = {'files': missing_files}
+
+        return missing_files_tree
+
+    def concatenate_file_contents(self):
+        tree_dict = self.tree_dict
+        combined_content = ""
+
+        def concatenate_from_path(path):
+            nonlocal combined_content
             for file in tree_dict[path]['files']:
-                tree_str += '{}-{}\n'.format(subindent, file)
+                file_path = os.path.join(path, file)
+                with open(file_path, 'r') as f:
+                    combined_content += f"\n{file}:\n"
+                    combined_content += f.read()
 
             for subdir in tree_dict[path]['dirs']:
                 subdir_path = os.path.join(path, subdir)
                 if subdir_path in tree_dict:
-                    build_tree_string(subdir_path, level + 1)
+                    concatenate_from_path(subdir_path)
 
-        build_tree_string(self.directory_path)
-        return tree_str.strip()
-
-
-    @staticmethod
-    def compare_trees(original_tree_str, target_tree_str):
-        original_files = set(original_tree_str.splitlines())
-        target_files = set(target_tree_str.splitlines())
-        missing_files = list(original_files - target_files)
-        return missing_files
-
-    def concatenate_file_contents(self):
-        combined_content = ""
-        for root, _, files in os.walk(self.directory_path):
-            for file in files:
-                if file not in self.ignored_files:
-                    file_path = os.path.join(root, file)
-                    with open(file_path, 'r') as f:
-                        combined_content += f"\n{file}:\n"
-                        combined_content += f.read()
+        concatenate_from_path(self.directory_path)
         return combined_content
+ 
 
 # Example usage
 # ignored_files = ['.DS_Store']

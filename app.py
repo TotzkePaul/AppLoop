@@ -12,7 +12,7 @@ from openai import OpenAI
 
 client = OpenAI(
     # This is the default and can be omitted
-    api_key="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",
+    api_key=os.environ.get("OPENAI_API_KEY")
 )
 
 def load_config(path):
