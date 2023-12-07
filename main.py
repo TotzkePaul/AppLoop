@@ -10,6 +10,16 @@ client = OpenAI(
 
 def integrate_openai(input_text):
     messages = []
+
+    messages.append({
+            "role": "system",
+            "content": "You look at a tree of files in an angular project. \
+                You only reply with another tree of files that would be required \
+                    to fufill the user's request. No additional comments, only a tree \
+                        reprentation of the files. Use a flat list where the Folder is labeled as its full relative path.\
+                            Files should be this format: \"{- filename-no-path}\
+                                Not just the changes, but the entire tree.",
+        })
     for text in input_text:
         messages.append({
             "role": "user",
@@ -21,7 +31,7 @@ def integrate_openai(input_text):
         model="gpt-4-1106-preview",
     )
 
-    file_contents = chat_completion.choices[0].message.content
+    file_contents = chat_completion.choices[0].message.content[3:-3]
 
     return file_contents
 
